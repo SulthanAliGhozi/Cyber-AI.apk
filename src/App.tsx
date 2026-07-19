@@ -7,6 +7,7 @@ import { RoleManager } from "./components/RoleManager";
 import { SplashScreen } from "./components/SplashScreen";
 import { Shield, ShieldAlert, Wifi, Activity, RefreshCw, X } from "lucide-react";
 import { getSavedFirebaseConfig, getEnvFirebaseConfig } from "./lib/firebase";
+import { Browser } from '@capacitor/browser';
 
 interface UserProfile {
   email: string;
@@ -26,9 +27,9 @@ export default function App() {
   const [decryptProgress, setDecryptProgress] = useState(0);
   const [decryptLogs, setDecryptLogs] = useState<string[]>([]);
 
-  // Secure Portal Webview states
-  const [showPortal, setShowPortal] = useState(false);
-  const [iframeKey, setIframeKey] = useState(0);
+  const [decryptProgress, setDecryptProgress] = useState(0);
+  const [decryptLogs, setDecryptLogs] = useState<string[]>([]);
+  
   // 1. Automatic Dark Mode Detection
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -190,12 +191,16 @@ export default function App() {
         ]);
         playBeep(1200, "sine", 0.5);
 
-        setTimeout(() => {
+        setTimeout(async () => {
           setShowDecryptor(false);
-          // RESPONSIVE UX LOGIC: App -> Webview, Browser -> New Tab
-          const isApp = window.navigator.userAgent.toLowerCase().includes('wv');
+          // RESPONSIVE UX LOGIC: App -> Native In-App Browser, Browser -> New Tab
+          const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
           if (isApp) {
-            setShowPortal(true);
+            try {
+              await Browser.open({ url: "https://0xriki.ai/?masuk=1" });
+            } catch (err) {
+              window.open("https://0xriki.ai/?masuk=1", "_blank");
+            }
           } else {
             window.open("https://0xriki.ai/?masuk=1", "_blank");
           }
@@ -408,12 +413,16 @@ export default function App() {
               {decryptProgress >= 85 && (
                 <div className="pt-2 flex justify-center animate-pulse">
                   <button 
-                    onClick={() => {
+                    onClick={async () => {
                       setShowDecryptor(false);
                       playBeep(800, "sine", 0.1);
-                      const isApp = window.navigator.userAgent.toLowerCase().includes('wv');
+                      const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
                       if (isApp) {
-                        setShowPortal(true);
+                        try {
+                          await Browser.open({ url: "https://0xriki.ai/?masuk=1" });
+                        } catch (err) {
+                          window.open("https://0xriki.ai/?masuk=1", "_blank");
+                        }
                       } else {
                         window.open("https://0xriki.ai/?masuk=1", "_blank");
                       }
@@ -429,93 +438,6 @@ export default function App() {
         </div>
       )}
 
-      {/* High-security Webview Portal Workspace */}
-      {showPortal && (
-        <div className={`fixed inset-0 z-[10000] flex flex-col transition-colors duration-500 ${
-          isDark ? "bg-[#050505] text-[#a78bfa]" : "bg-neutral-50 text-neutral-900"
-        }`}>
-          {/* Top Control Bar / Chrome */}
-          <header className={`border-b px-4 py-3 flex flex-wrap items-center justify-between gap-3 backdrop-blur-md ${
-            isDark ? "border-[#a78bfa]/20 bg-black/85" : "border-indigo-500/20 bg-white/85"
-          }`}>
-            <div className="flex items-center gap-3">
-              <div className={`p-1.5 rounded border animate-pulse ${
-                isDark ? "border-[#a78bfa]/30 text-[#a78bfa] bg-[#a78bfa]/10" : "border-indigo-500/30 text-indigo-600 bg-indigo-50"
-              }`}>
-                <Shield className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-black uppercase tracking-wider ${
-                    isDark ? "text-[#a78bfa]" : "text-indigo-600"
-                  }`}>
-                    SECURE INTERFACE CLIENT
-                  </span>
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-ping inline-block" />
-                  <span className="text-[9px] font-mono opacity-70 uppercase hidden sm:inline">
-                    TUNNEL ACTIVE
-                  </span>
-                </div>
-                <p className="text-[9px] font-mono opacity-60">
-                  PROTOCOL: AES-256-GCM / REMOTE-SECURE-NODE
-                </p>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="hidden md:flex items-center gap-4 font-mono text-[10px] opacity-75">
-              <span className="flex items-center gap-1"><Activity className="w-3 h-3 text-[#a78bfa] animate-pulse" /> FPS: 60</span>
-              <span className="flex items-center gap-1"><Wifi className="w-3 h-3 text-green-500" /> LOSS: 0%</span>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  setIframeKey((prev) => prev + 1);
-                  playBeep(800, "sine", 0.1);
-                }}
-                className={`p-2 rounded border transition-all hover:scale-105 active:scale-95 cursor-pointer ${
-                  isDark 
-                    ? "border-[#a78bfa]/20 bg-black hover:bg-[#a78bfa]/10 text-[#a78bfa]" 
-                    : "border-neutral-300 bg-white hover:bg-neutral-100 text-neutral-700"
-                }`}
-                title="Refresh Connection"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowPortal(false);
-                  playBeep(600, "sine", 0.15);
-                }}
-                className={`py-1.5 px-3 rounded border font-mono text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 active:scale-95 flex items-center gap-1 cursor-pointer ${
-                  isDark 
-                    ? "border-red-500/30 bg-red-950/20 text-red-400 hover:bg-red-500/20" 
-                    : "border-neutral-300 bg-red-50 text-red-700 hover:bg-red-100"
-                }`}
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>CLOSE CLIENT</span>
-              </button>
-            </div>
-          </header>
-
-          {/* WebView Sandbox Iframe Container */}
-          <div className="flex-1 bg-black relative">
-            <iframe
-              key={iframeKey}
-              src="https://0xriki.ai/?masuk=1"
-              className="w-full h-full border-0 bg-white"
-              title="Secure Node Portal"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
-              allow="geolocation; microphone; camera; midi; encrypted-media; clipboard-write; clipboard-read"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Floating WhatsApp Support Button - Rendered at root level outside the min-h-screen container to guarantee true viewport fixed-positioning on all mobile browsers */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] group flex flex-col items-end">
