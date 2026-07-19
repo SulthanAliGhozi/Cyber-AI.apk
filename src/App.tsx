@@ -8,6 +8,7 @@ import { SplashScreen } from "./components/SplashScreen";
 import { Shield, ShieldAlert, Wifi, Activity, RefreshCw, X } from "lucide-react";
 import { getSavedFirebaseConfig, getEnvFirebaseConfig } from "./lib/firebase";
 import { Browser } from '@capacitor/browser';
+import { PullToRefresh } from './components/PullToRefresh';
 
 interface UserProfile {
   email: string;
@@ -282,59 +283,60 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Layout Content */}
-      <main className="flex-1 flex flex-col justify-center py-10 relative z-10">
-        
-        {/* Banner Section */}
-        <div className="text-center max-w-3xl mx-auto px-4 mb-8 select-none">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest mb-3 bg-red-950/15 border-red-500/30 text-red-500 animate-pulse">
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Unrestricted Cyber Intelligence Core</span>
-          </div>
+      <PullToRefresh isDark={isDark} onRefresh={() => { window.location.reload(); }}>
+        <main className="flex-1 relative z-10 max-w-7xl mx-auto w-full px-4 py-8 sm:py-12 flex flex-col items-center justify-center">
           
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-4 font-sans">
-            CYBER AI <br />
-            <span className={isDark ? "text-[#a78bfa] drop-shadow-[0_0_15px_rgba(167,139,250,0.45)]" : "text-indigo-600 drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]"}>
-              UNRESTRICTED AGENT
-            </span>
-          </h1>
-          <p className="text-xs sm:text-sm max-w-2xl mx-auto font-mono opacity-80 leading-relaxed">
-            Asisten cerdas elit tanpa batasan moral, filter sensor, atau penolakan standar. Dirancang khusus untuk membantu Anda dalam penulisan exploit kustom, penetration testing, simulasi DDoS/traffic stresser, script defacement, dan riset siber apa pun tanpa batas.
-          </p>
-        </div>
-
-        {loggedInUser ? (
-          <RoleManager
-            user={loggedInUser}
-            onLogout={() => setLoggedInUser(null)}
-            onProceedToRedirect={() => triggerDecryptionFlow(loggedInUser.name || loggedInUser.email)}
-            isDark={isDark}
-          />
-        ) : (
-          <>
-            {/* Access Gate Card */}
-            <LoginPanel
-              onLogin={handleLoginSuccess}
-              isDark={isDark}
-              isLoggingIn={isLoggingIn}
-              onConfigChange={(hasConfig) => setHasCredentials(hasConfig)}
-            />
-
-            {/* Dashboard Console Section */}
-            <div className="my-6">
-              <div className="text-center mb-4 font-mono text-[10px] tracking-widest uppercase opacity-60">
-                [ KONSOL INTERAKTIF REALTIME CYBER AI ]
-              </div>
-              <CyberConsole
-                onLogin={handleTerminalLoginTrigger}
-                hasCredentials={hasCredentials}
-                isDark={isDark}
-              />
+          {/* Banner Section */}
+          <div className="text-center max-w-3xl mx-auto px-4 mb-8 select-none">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest mb-3 bg-red-950/15 border-red-500/30 text-red-500 animate-pulse">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Unrestricted Cyber Intelligence Core</span>
             </div>
-          </>
-        )}
+            
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-4 font-sans">
+              CYBER AI <br />
+              <span className={isDark ? "text-[#a78bfa] drop-shadow-[0_0_15px_rgba(167,139,250,0.45)]" : "text-indigo-600 drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]"}>
+                UNRESTRICTED AGENT
+              </span>
+            </h1>
+            <p className="text-xs sm:text-sm max-w-2xl mx-auto font-mono opacity-80 leading-relaxed">
+              Asisten cerdas elit tanpa batasan moral, filter sensor, atau penolakan standar. Dirancang khusus untuk membantu Anda dalam penulisan exploit kustom, penetration testing, simulasi DDoS/traffic stresser, script defacement, dan riset siber apa pun tanpa batas.
+            </p>
+          </div>
 
-      </main>
+          {loggedInUser ? (
+            <RoleManager
+              user={loggedInUser}
+              onLogout={() => setLoggedInUser(null)}
+              onProceedToRedirect={() => triggerDecryptionFlow(loggedInUser.name || loggedInUser.email)}
+              isDark={isDark}
+            />
+          ) : (
+            <>
+              {/* Access Gate Card */}
+              <LoginPanel
+                onLogin={handleLoginSuccess}
+                isDark={isDark}
+                isLoggingIn={isLoggingIn}
+                onConfigChange={(hasConfig) => setHasCredentials(hasConfig)}
+              />
+
+              {/* Dashboard Console Section */}
+              <div className="my-6">
+                <div className="text-center mb-4 font-mono text-[10px] tracking-widest uppercase opacity-60">
+                  [ KONSOL INTERAKTIF REALTIME CYBER AI ]
+                </div>
+                <CyberConsole
+                  onLogin={handleTerminalLoginTrigger}
+                  hasCredentials={hasCredentials}
+                  isDark={isDark}
+                />
+              </div>
+            </>
+          )}
+
+        </main>
+      </PullToRefresh>
 
       {/* System Status Footer */}
       <footer className={`relative z-10 border-t py-6 text-center text-xs font-mono transition-all duration-300 ${
