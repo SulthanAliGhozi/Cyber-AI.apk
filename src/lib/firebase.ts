@@ -142,111 +142,142 @@ export const getGoogleProvider = () => {
   return provider;
 };
 
+export type UserRole = "pending" | "user premium" | "reseller" | "admin owner";
+
+export interface UserData {
+  email: string;
+  role: UserRole;
+  addedAt?: string;
+  name?: string;
+}
+
 /**
- * Checks if a user email is present in the authorized whitelist (strictly Firestore database)
+ * Checks a user's role from Firestore, or assigns 'pending' if new.
  */
-export const checkEmailWhitelist = async (email: string): Promise<boolean> => {
+export const getUserRole = async (email: string, name?: string): Promise<UserRole> => {
   const normalized = email.trim().toLowerCase();
-  
-  // Permanent system admins
+  if (!normalized) return "pending";
+
   const hardcodedAdmins = ["s.a.ghozi@gmail.com", "sulthanalighozi@gmail.com"];
-  if (hardcodedAdmins.includes(normalized)) {
-    return true;
-  }
-
-  // Check Firestore (No local storage fallback for strict security)
+  
   const dbInstance = getFirebaseDb();
-  if (dbInstance) {
-    try {
-      const docRef = doc(dbInstance, "whitelist_emails", normalized);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap.data().allowed !== false) {
-        return true;
-      }
-    } catch (err) {
-      console.error("Firestore whitelist check failed:", err);
-    }
-  }
+  if (!dbInstance) return "pending";
 
-  return false;
+  try {
+    const docRef = doc(dbInstance, "users", normalized);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      const data = docSnap.data() as UserData;
+      // Auto upgrade hardcoded admins if their role is less than admin owner
+      if (hardcodedAdmins.includes(normalized) && data.role !== "admin owner") {
+         await setDoc(docRef, { role: "admin owner" }, { merge: true });
+         return "admin owner";
+      }
+      return data.role || "pending";
+    } else {
+      // Create new user with pending role, or admin owner if hardcoded
+      const initialRole: UserRole = hardcodedAdmins.includes(normalized) ? "admin owner" : "pending";
+      await setDoc(docRef, {
+        email: normalized,
+        name: name || "",
+        role: initialRole,
+        addedAt: new Date().toISOString(),
+      });
+      return initialRole;
+    }
+  } catch (err) {
+    console.error("Firestore get role failed:", err);
+    return "pending";
+  }
 };
 
 /**
- * Fetches all allowed email addresses
+ * Fetches all users from Firestore
  */
-export const getWhitelistedEmails = async (): Promise<string[]> => {
+export const getAllUsers = async (): Promise<UserData[]> => {
   const dbInstance = getFirebaseDb();
-  const defaultList = ["s.a.ghozi@gmail.com", "sulthanalighozi@gmail.com"];
-  
-  let firestoreList: string[] = [];
+  let firestoreList: UserData[] = [];
   if (dbInstance) {
     try {
-      const querySnapshot = await getDocs(collection(dbInstance, "whitelist_emails"));
+      const querySnapshot = await getDocs(collection(dbInstance, "users"));
       querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data && data.email && data.allowed !== false) {
-          firestoreList.push(data.email.trim().toLowerCase());
+        const data = doc.data() as UserData;
+        if (data && data.email) {
+          firestoreList.push({
+            ...data,
+            email: data.email.trim().toLowerCase(),
+            role: data.role || "pending"
+          });
         }
       });
     } catch (err) {
-      console.error("Failed to fetch from Firestore:", err);
+      console.error("Failed to fetch users from Firestore:", err);
     }
   }
-
-  // Combine lists and de-duplicate
-  const combined = Array.from(new Set([
-    ...defaultList,
-    ...firestoreList
-  ])).filter(Boolean);
-
-  return combined;
+  return firestoreList;
 };
 
 /**
- * Adds an email to the allowed list (Firestore strictly)
+ * Updates a user's role (Firestore strictly)
  */
-export const addWhitelistedEmail = async (email: string): Promise<void> => {
+export const updateUserRole = async (email: string, newRole: UserRole, executorRole: UserRole): Promise<void> => {
   const normalized = email.trim().toLowerCase();
   if (!normalized) return;
 
-  // Add to Firestore
+  if (normalized === "s.a.ghozi@gmail.com" || normalized === "sulthanalighozi@gmail.com") {
+    throw new Error("Tidak dapat mengubah role milik Admin Utama (Owner).");
+  }
+
+  // Permission Checks
+  if (executorRole !== "admin owner" && executorRole !== "reseller") {
+     throw new Error("Anda tidak memiliki izin untuk mengubah role.");
+  }
+  
+  if (executorRole === "reseller") {
+     if (newRole === "reseller" || newRole === "admin owner") {
+        throw new Error("Reseller hanya bisa memberikan role 'user premium'.");
+     }
+  }
+
   const dbInstance = getFirebaseDb();
   if (dbInstance) {
     try {
-      await setDoc(doc(dbInstance, "whitelist_emails", normalized), {
-        email: normalized,
-        allowed: true,
-        addedAt: new Date().toISOString(),
-      });
+      await setDoc(doc(dbInstance, "users", normalized), {
+        role: newRole,
+      }, { merge: true });
     } catch (err) {
-      console.error("Failed to save to Firestore:", err);
+      console.error("Failed to update user role:", err);
       throw err;
     }
   } else {
-    throw new Error("Firestore database connection is inactive.");
+    throw new Error("Koneksi Firestore tidak aktif.");
   }
 };
 
 /**
- * Removes an email from the allowed list (Firestore strictly)
+ * Removes a user entirely (Firestore strictly)
  */
-export const removeWhitelistedEmail = async (email: string): Promise<void> => {
+export const removeUser = async (email: string, executorRole: UserRole): Promise<void> => {
   const normalized = email.trim().toLowerCase();
   if (!normalized) return;
   if (normalized === "s.a.ghozi@gmail.com" || normalized === "sulthanalighozi@gmail.com") {
-    throw new Error("Cannot remove primary administrator account from whitelist.");
+    throw new Error("Tidak dapat menghapus Admin Utama (Owner).");
   }
 
-  // Remove from Firestore
+  if (executorRole !== "admin owner") {
+     throw new Error("Hanya Admin Owner yang dapat menghapus user secara permanen.");
+  }
+
   const dbInstance = getFirebaseDb();
   if (dbInstance) {
     try {
-      await deleteDoc(doc(dbInstance, "whitelist_emails", normalized));
+      await deleteDoc(doc(dbInstance, "users", normalized));
     } catch (err) {
-      console.error("Failed to delete from Firestore:", err);
+      console.error("Failed to delete user:", err);
       throw err;
     }
   } else {
-    throw new Error("Firestore database connection is inactive.");
+    throw new Error("Koneksi Firestore tidak aktif.");
   }
 };

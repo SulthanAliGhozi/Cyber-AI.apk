@@ -3,7 +3,7 @@ import { TerminalBackground } from "./components/TerminalBackground";
 import { GlitchText } from "./components/GlitchText";
 import { CyberConsole } from "./components/CyberConsole";
 import { LoginPanel } from "./components/LoginPanel";
-import { WhitelistManager } from "./components/WhitelistManager";
+import { RoleManager } from "./components/RoleManager";
 import { SplashScreen } from "./components/SplashScreen";
 import { Shield, ShieldAlert, Wifi, Activity, RefreshCw, X } from "lucide-react";
 import { getSavedFirebaseConfig, getEnvFirebaseConfig } from "./lib/firebase";
@@ -12,6 +12,7 @@ interface UserProfile {
   email: string;
   name: string;
   picture?: string;
+  role?: string;
 }
 
 export default function App() {
@@ -49,7 +50,7 @@ export default function App() {
     // Auto-login if session exists
     const checkSession = async () => {
       try {
-        const { getFirebaseAuth, checkEmailWhitelist } = await import("./lib/firebase");
+        const { getFirebaseAuth, getUserRole } = await import("./lib/firebase");
         const { onAuthStateChanged } = await import("firebase/auth");
         const authInstance = getFirebaseAuth();
         if (authInstance) {
@@ -57,17 +58,18 @@ export default function App() {
             if (user) {
               const userEmail = (user.email || user.providerData?.[0]?.email || "").trim().toLowerCase();
               if (userEmail) {
-                const isAllowed = await checkEmailWhitelist(userEmail);
-                if (isAllowed) {
-                  setLoggedInUser({
-                    email: userEmail,
-                    name: user.displayName || user.providerData?.[0]?.displayName || userEmail || "Cyber Agent",
-                    picture: user.photoURL || user.providerData?.[0]?.photoURL || undefined,
-                  });
-                } else {
-                  await authInstance.signOut();
-                }
+                const userName = user.displayName || user.providerData?.[0]?.displayName || userEmail.split('@')[0];
+                const role = await getUserRole(userEmail, userName);
+                
+                setLoggedInUser({
+                  email: userEmail,
+                  name: userName,
+                  picture: user.photoURL || user.providerData?.[0]?.photoURL || undefined,
+                  role: role
+                });
               }
+            } else {
+              setLoggedInUser(null);
             }
           });
         }
@@ -105,7 +107,6 @@ export default function App() {
     setIsLoggingIn(false);
   };
 
-  // 5. Trigger OAuth Login from general triggers (e.g. terminal)
   const handleTerminalLoginTrigger = async () => {
     if (!hasCredentials) {
       alert("Firebase is not configured! Please click the Settings gear icon in the 'SECURE ACCESS GATEWAY' to configure your credentials.");
@@ -132,17 +133,15 @@ export default function App() {
         throw new Error("ACCESS UNAPPROVED: No verified email address associated with this Google Node account.");
       }
 
-      const { checkEmailWhitelist } = await import("./lib/firebase");
-      const isAllowed = await checkEmailWhitelist(userEmail);
-      if (!isAllowed) {
-        await authInstance.signOut();
-        throw new Error(`ACCESS UNAPPROVED: The email address (${userEmail}) is not authorized on this secure gateway. Please ask the node administrator to add your email to the whitelist.`);
-      }
+      const userName = user.displayName || user.providerData?.[0]?.displayName || userEmail.split('@')[0];
+      const { getUserRole } = await import("./lib/firebase");
+      const role = await getUserRole(userEmail, userName);
 
       handleLoginSuccess({
         email: userEmail,
-        name: user.displayName || user.providerData?.[0]?.displayName || userEmail || "Cyber Agent",
+        name: userName,
         picture: user.photoURL || user.providerData?.[0]?.photoURL || undefined,
+        role: role
       });
 
     } catch (err: any) {
@@ -150,10 +149,6 @@ export default function App() {
       let errorText = err.message || String(err);
       if (err.code === "auth/popup-blocked") {
         errorText = "The authorization popup was blocked by your browser. Please allow popups and try again.";
-      } else if (err.code === "auth/configuration-not-found") {
-        errorText = "Google Sign-In is not enabled in your Firebase console.";
-      } else if (err.code === "auth/unauthorized-domain") {
-        errorText = "This domain is not authorized in your Firebase console. Please add your dynamic .run.app URL under Authentication -> Settings -> Authorized domains.";
       }
       alert(`SYSTEM ALERT: ${errorText}`);
     } finally {
@@ -303,7 +298,7 @@ export default function App() {
         </div>
 
         {loggedInUser ? (
-          <WhitelistManager
+          <RoleManager
             user={loggedInUser}
             onLogout={() => setLoggedInUser(null)}
             onProceedToRedirect={() => triggerDecryptionFlow(loggedInUser.name || loggedInUser.email)}
