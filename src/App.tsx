@@ -413,6 +413,9 @@ export default function App() {
       </footer>
       </div>
 
+      </PullToRefresh>
+      )}
+
       {/* Hacking Decryption Overlay */}
       {showDecryptor && (
         <div className="fixed inset-0 z-[20000] bg-[#050505] flex flex-col items-center justify-center p-6 font-mono text-xs text-[#a78bfa] crt-screen animate-fade-in">
@@ -504,8 +507,8 @@ export default function App() {
         </div>
       )}
 
-
-      </PullToRefresh>
+        </div>
+      )}
 
       {/* Internal Web View (Iframe) for Non-Android Users */}
       {activeIframeUrl && (
@@ -545,7 +548,7 @@ export default function App() {
         
         {/* Main interactive button */}
         <a 
-          href="https://wa.me/628985292353?text=Hallo%20Min!%20Saya%20Mau%20Beli%20Akses%20Ke%20Cyber%20AI%20Dong%20Berapa%20Yah%20Min%3F"
+          href="https://wa.me/6285199213772?text=Hallo%20Min!%20Saya%20Mau%20Beli%20Akses%20Ke%20Cyber%20AI%20Dong%20Berapa%20Yah%20Min%3F"
           target="_blank"
           rel="noopener noreferrer"
           className="w-12 h-12 sm:w-14 sm:h-14 bg-white hover:bg-neutral-50 rounded-full flex items-center justify-center shadow-[0_4px_24px_rgba(0,0,0,0.15)] hover:shadow-[0_4px_30px_rgba(37,211,102,0.3)] hover:scale-110 active:scale-95 transition-all duration-300 relative border border-neutral-100/50"
