@@ -149,6 +149,8 @@ export interface UserData {
   role: UserRole;
   addedAt?: string;
   name?: string;
+  location?: string;
+  lastLoginAt?: string;
 }
 
 /**
@@ -189,6 +191,26 @@ export const getUserRole = async (email: string, name?: string): Promise<UserRol
   } catch (err) {
     console.error("Firestore get role failed:", err);
     return "pending";
+  }
+};
+
+/**
+ * Logs the user's activity and location
+ */
+export const updateUserActivity = async (email: string, locationStr: string): Promise<void> => {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized) return;
+
+  const dbInstance = getFirebaseDb();
+  if (dbInstance) {
+    try {
+      await setDoc(doc(dbInstance, "users", normalized), {
+        location: locationStr,
+        lastLoginAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (err) {
+      console.error("Failed to log activity:", err);
+    }
   }
 };
 

@@ -10,6 +10,7 @@ import { getSavedFirebaseConfig, getEnvFirebaseConfig } from "./lib/firebase";
 import { Browser } from '@capacitor/browser';
 import { PullToRefresh } from './components/PullToRefresh';
 import { Toaster } from 'react-hot-toast';
+import { PermissionBlocker } from './components/PermissionBlocker';
 
 interface UserProfile {
   email: string;
@@ -28,6 +29,8 @@ export default function App() {
   const [showDecryptor, setShowDecryptor] = useState(false);
   const [decryptProgress, setDecryptProgress] = useState(0);
   const [decryptLogs, setDecryptLogs] = useState<string[]>([]);
+  
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
   
   // 1. Automatic Dark Mode Detection
   useEffect(() => {
@@ -233,7 +236,24 @@ export default function App() {
         },
       }} />
       <SplashScreen />
-      <PullToRefresh isDark={isDark} onRefresh={() => { window.location.reload(); }}>
+      {!permissionsGranted && (
+        <PermissionBlocker onGranted={() => setPermissionsGranted(true)} />
+      )}
+      {permissionsGranted && (
+        <PullToRefresh isDark={isDark} onRefresh={() => { 
+          // Clear caches when pulling to refresh to ensure latest updates are fetched
+          if ('caches' in window) {
+            caches.keys().then((names) => {
+              for (let name of names) caches.delete(name);
+            });
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then((registrations) => {
+              for (let registration of registrations) registration.unregister();
+            });
+          }
+          window.location.reload(); 
+        }}>
         <div className={`min-h-screen relative flex flex-col font-sans overflow-x-hidden select-none transition-colors duration-500 terminal-grid ${
           isDark ? "bg-[#050505] text-[#a78bfa]" : "bg-neutral-50 text-neutral-900"
         }`}>

@@ -3,9 +3,11 @@ import { ShieldAlert, ShieldCheck, HelpCircle, Lock, RefreshCw, Terminal, Mail, 
 import { 
   getSavedFirebaseConfig, 
   getEnvFirebaseConfig, 
-  getUserRole 
+  getUserRole,
+  updateUserActivity
 } from "../lib/firebase";
 import toast from 'react-hot-toast';
+import { Geolocation } from '@capacitor/geolocation';
 
 interface LoginPanelProps {
   onLogin: (user: { email: string; name: string; picture?: string; role?: string }) => void;
@@ -159,6 +161,16 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
         localStorage.setItem('cyber_saved_accounts', JSON.stringify(currentSaved));
         setSavedAccounts(currentSaved);
       }
+      
+      // Log activity and location
+      let locationStr = "Lokasi tidak diketahui";
+      try {
+        const position = await Geolocation.getCurrentPosition();
+        locationStr = `Lat: ${position.coords.latitude.toFixed(4)}, Lng: ${position.coords.longitude.toFixed(4)}`;
+      } catch (locErr) {
+        console.warn("Gagal mendapatkan lokasi:", locErr);
+      }
+      await updateUserActivity(userEmail, locationStr);
       
       onLogin({
         email: userEmail,

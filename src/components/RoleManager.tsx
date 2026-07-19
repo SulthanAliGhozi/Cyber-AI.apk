@@ -332,13 +332,14 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
                       <tr className={isDark ? "bg-neutral-900/60 border-b border-neutral-800" : "bg-neutral-200/50 border-b border-neutral-300"}>
                         <th className="p-3 font-bold opacity-70">EMAIL / NAMA</th>
                         <th className="p-3 font-bold opacity-70">ROLE SAAT INI</th>
+                        <th className="p-3 font-bold opacity-70">AKTIVITAS TERAKHIR</th>
                         <th className="p-3 font-bold opacity-70 text-right">AKSI</th>
                       </tr>
                     </thead>
                     <tbody>
                       {users.length === 0 ? (
                         <tr>
-                          <td colSpan={3} className="p-6 text-center opacity-50 italic">Data kosong atau sedang memuat...</td>
+                          <td colSpan={4} className="p-6 text-center opacity-50 italic">Data kosong atau sedang memuat...</td>
                         </tr>
                       ) : (
                         users.map((u) => {
@@ -361,6 +362,10 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
                                 }`}>
                                   {u.role}
                                 </span>
+                              </td>
+                              <td className="p-3">
+                                <div className="text-[10px] opacity-80 mb-0.5">{u.location || "Belum ada data GPS"}</div>
+                                <div className="text-[9px] opacity-50">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('id-ID') : "Belum pernah login"}</div>
                               </td>
                               <td className="p-3 text-right">
                                 {isOwner ? (
