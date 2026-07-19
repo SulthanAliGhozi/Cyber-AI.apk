@@ -11,7 +11,8 @@ import {
   Mail, 
   CheckCircle2, 
   AlertTriangle,
-  Settings
+  Settings,
+  Database
 } from "lucide-react";
 import { 
   getAllUsers, 
@@ -67,6 +68,24 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
       fetchUsers();
     }
   }, [user.role]);
+
+  const handleBackupDatabase = () => {
+    try {
+      const dataStr = JSON.stringify(users, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `cyber-ai-db-${new Date().toISOString().split('T')[0]}.json`;
+
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      setMessage({ text: "SISTEM: Database berhasil dicadangkan (backup) ke perangkat Anda!", isError: false });
+    } catch(err) {
+      setMessage({ text: "ERROR: Gagal membackup database.", isError: true });
+    }
+  };
 
   const handleRoleChange = async (targetEmail: string, newRole: UserRole) => {
     if (!window.confirm(`Yakin ingin mengubah role ${targetEmail} menjadi ${newRole}?`)) {
@@ -271,6 +290,14 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
                   <h4 className="font-bold font-sans text-xs uppercase tracking-widest flex items-center gap-2">
                     <Settings className="w-4 h-4" /> USER & ROLE MANAGEMENT
                   </h4>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleBackupDatabase}
+                    className="p-1.5 rounded hover:bg-blue-900/30 transition-all text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 cursor-pointer border border-blue-500/50 text-blue-400"
+                  >
+                    <Database className="w-3 h-3" />
+                    BACKUP DB
+                  </button>
                   <button
                     onClick={fetchUsers}
                     disabled={isLoading}
@@ -279,6 +306,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
                     <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
                     SYNC DATA
                   </button>
+                </div>
                 </div>
 
                 <div className={`border rounded-lg overflow-x-auto custom-scrollbar font-mono text-[11px] ${
