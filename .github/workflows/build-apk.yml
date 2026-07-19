@@ -1,44 +1,42 @@
-name: Build Android APK                          
-    on:                                              
-      workflow_dispatch: # Memungkinkan Anda memicu  
-  build secara manual                                
-                                                     
-    jobs:                                            
-      build:                                         
-        runs-on: ubuntu-latest                       
-        steps:                                       
-          - name: Cek Kode Sumber                    
-            uses: actions/checkout@v3                
-                                                     
-          - name: Setup Node.js                      
-            uses: actions/setup-node@v3              
-            with:                                    
-              node-version: '20'                     
-                                                     
-          - name: Install & Build Web                
-            run: |                                   
-              npm install                            
-              npm run build                          
-                                                     
-          - name: Setup Java JDK                     
-            uses: actions/setup-java@v3              
-            with:                                    
-              distribution: 'zulu'                   
-              java-version: '17'                     
-                                                     
-          - name: Setup Android SDK                  
-            uses: android-actions/setup-android@v2   
-                                                     
-          - name: Sinkronisasi Capacitor ke Android  
-            run: npx cap sync android                
-                                                     
-          - name: Build APK (Perakit)                
-            working-directory: ./android             
-            run: ./gradlew assembleDebug             
-                                                     
-          - name: Upload Hasil APK                   
-            uses: actions/upload-artifact@v3         
-            with:                                    
-              name: CyberAI-APK                      
-              path:                                  
-  android/app/build/outputs/apk/debug/app-debug.apk
+name: Build Android APK
+on:
+  workflow_dispatch: # Memungkinkan Anda memicu build secara manual
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cek Kode Sumber
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install & Build Web
+        run: |
+          npm install
+          npm run build
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Sinkronisasi Capacitor ke Android
+        run: npx cap sync android
+
+      - name: Build APK (Perakit)
+        working-directory: ./android
+        run: ./gradlew assembleDebug
+
+      - name: Upload Hasil APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: CyberAI-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
