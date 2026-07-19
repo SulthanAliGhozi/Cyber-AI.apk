@@ -15,8 +15,20 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
   const [isInitialCheck, setIsInitialCheck] = useState(true);
 
   const checkPermissions = async () => {
+    // Enforce HTML5 checks even on web
     if (!Capacitor.isNativePlatform()) {
-      onGranted();
+      try {
+         const geoStatus = await navigator.permissions.query({ name: 'geolocation' });
+         const camStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
+         
+         if (geoStatus.state === 'granted' && camStatus.state === 'granted') {
+           onGranted();
+         } else {
+           setIsInitialCheck(false);
+         }
+      } catch(err) {
+         setIsInitialCheck(false);
+      }
       return;
     }
 
@@ -77,7 +89,7 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
     }
   };
 
-  if (isInitialCheck && Capacitor.isNativePlatform()) {
+  if (isInitialCheck) {
     return (
       <div className="fixed inset-0 z-[99999] bg-black text-white flex flex-col items-center justify-center p-6 font-mono">
         <Loader2 className="w-12 h-12 text-[#a78bfa] animate-spin mb-4" />
