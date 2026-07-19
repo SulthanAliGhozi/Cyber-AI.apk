@@ -14,12 +14,14 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         devOptions: { enabled: true },
         manifest: {
+          id: '/',
           name: 'Cyber AI',
           short_name: 'Cyber AI',
           description: 'Cyber AI Secure Portal',
           theme_color: '#000000',
           background_color: '#000000',
           display: 'standalone',
+          orientation: 'portrait',
           icons: [
             {
               src: '/icon-192x192.png',
@@ -32,6 +34,19 @@ export default defineConfig(() => {
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any maskable'
+            }
+          ],
+          screenshots: [
+            {
+              src: '/splash-dekstop.png',
+              sizes: '1920x1080',
+              type: 'image/png',
+              form_factor: 'wide'
+            },
+            {
+              src: '/splash-mobile.png',
+              sizes: '1080x1920',
+              type: 'image/png'
             }
           ]
         }
