@@ -141,9 +141,9 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
       } else if (err.code === "auth/weak-password") {
          errorText = "Password terlalu lemah (minimal 6 karakter).";
       }
-      setLocalError(`ERROR: ${errorText}`);
+      setErrorMessage(`ERROR: ${errorText}`);
     } finally {
-      setLocalLoading(false);
+      setIsFirebaseLoading(false);
     }
   };
 
@@ -158,23 +158,9 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
             Sistem Terkunci
           </h2>
           <p className={`text-xs font-mono mb-4 ${isDark ? "text-red-300/70" : "text-red-700/70"}`}>
-            Kredensial Firebase belum dikonfigurasi. Anda harus mengatur API Key terlebih dahulu.
+            Kredensial Firebase belum dikonfigurasi. Anda harus mengatur konfigurasi terlebih dahulu.
           </p>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="py-2.5 px-6 rounded border font-mono text-[10px] uppercase tracking-widest font-bold bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20 transition-all cursor-pointer"
-          >
-            Buka Pengaturan Sistem
-          </button>
         </div>
-        {showSettings && (
-          <SettingsModal
-            onClose={() => setShowSettings(false)}
-            onSave={handleSaveConfig}
-            isDark={isDark}
-            initialConfig={getSavedFirebaseConfig()}
-          />
-        )}
       </div>
     );
   }
@@ -202,20 +188,12 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setShowSettings(true)}
-            className={`p-1.5 rounded transition-colors ${
-              isDark ? "hover:bg-neutral-800 text-neutral-500 hover:text-[#a78bfa]" : "hover:bg-neutral-100 text-neutral-400 hover:text-indigo-600"
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-          </button>
         </div>
 
-        {localError && (
+        {errorMessage && (
           <div className="mb-5 p-3 rounded border border-red-500/30 bg-red-950/20 text-red-500 text-[10px] font-mono flex items-start gap-2 animate-fade-in">
             <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-            <p className="leading-relaxed">{localError}</p>
+            <p className="leading-relaxed">{errorMessage}</p>
           </div>
         )}
 
@@ -264,17 +242,17 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
 
           <button
             type="submit"
-            disabled={isLoggingIn || localLoading}
-            className={`w-full py-3 px-4 rounded-lg font-mono text-[11px] font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
+            disabled={isLoggingIn || isFirebaseLoading}
+            className={`w-full py-3 px-4 rounded-lg font-mono text-xs font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(167,139,250,0.3)] cursor-pointer ${
               isDark
-                ? "bg-[#a78bfa]/10 border border-[#a78bfa]/30 text-[#a78bfa] hover:bg-[#a78bfa] hover:text-black hover:shadow-[0_0_20px_rgba(167,139,250,0.4)]"
-                : "bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
-            } ${(isLoggingIn || localLoading) ? "opacity-50 cursor-not-allowed" : ""}`}
+                ? "bg-[#a78bfa] text-black hover:bg-white hover:shadow-[0_0_25px_rgba(167,139,250,0.6)]"
+                : "bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]"
+            } ${(isLoggingIn || isFirebaseLoading) ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            {(isLoggingIn || localLoading) ? (
-              <><RefreshCw className="w-4 h-4 animate-spin" /> MENGOTENTIKASI...</>
+            {(isLoggingIn || isFirebaseLoading) ? (
+              <><RefreshCw className="w-4 h-4 animate-spin" /> MENGHUBUNGKAN...</>
             ) : (
-              isRegisterMode ? "DAFTAR SEKARANG" : "LOGIN TO TERMINAL"
+              isRegisterMode ? "DAFTAR SEKARANG" : "VERIFIKASI AKSES"
             )}
           </button>
         </form>
@@ -291,7 +269,7 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
           </button>
         </div>
 
-        {!isNative && (
+        {!window.navigator.userAgent.toLowerCase().includes('wv') && (
           <>
             <div className="relative my-6 flex items-center justify-center">
               <div className={`absolute inset-0 flex items-center`}>
@@ -304,12 +282,12 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
 
             <button
               onClick={handleGoogleLogin}
-              disabled={isLoggingIn || localLoading}
+              disabled={isLoggingIn || isFirebaseLoading}
               className={`w-full py-3 px-4 rounded-lg border font-mono text-[11px] font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer ${
                 isDark
                   ? "bg-black border-neutral-800 text-white hover:border-neutral-600 hover:bg-neutral-900"
                   : "bg-white border-neutral-200 text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50"
-              } ${(isLoggingIn || localLoading) ? "opacity-50 cursor-not-allowed" : ""}`}
+              } ${(isLoggingIn || isFirebaseLoading) ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
