@@ -180,10 +180,20 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
             <p className="font-mono text-xs opacity-80 max-w-lg mx-auto">
               Akun Anda telah berhasil didaftarkan ke dalam sistem kami. Namun, Anda belum diberikan hak akses (Role) untuk menggunakan fitur Cyber AI. Silakan hubungi Admin atau Reseller Anda untuk mengaktifkan akun.
             </p>
-            <div className="pt-4">
+            <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href="https://wa.me/628985292353?text=Hallo%20Min!%20Akun%20saya%20masih%20berstatus%20PENDING.%20Tolong%20diaktifkan%20dong!"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-6 rounded-lg font-mono text-xs uppercase tracking-wider font-bold bg-[#25D366] text-white hover:bg-[#20b958] transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(37,211,102,0.4)] hover:shadow-[0_0_25px_rgba(37,211,102,0.6)] hover:scale-105 active:scale-95"
+              >
+                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WA" className="w-4 h-4 brightness-0 invert" />
+                [ HUBUNGI ADMIN VIA WHATSAPP ]
+              </a>
+
               <button
                 onClick={handleFirebaseAuthLogout}
-                className="py-2.5 px-6 rounded-lg font-mono text-xs uppercase tracking-wider font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition-all flex items-center gap-2 mx-auto cursor-pointer"
+                className="py-2.5 px-6 rounded-lg font-mono text-xs uppercase tracking-wider font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 [ LOGOUT ]
