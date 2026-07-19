@@ -139,129 +139,188 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
       } else if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
         errorText = "Email atau password salah.";
       } else if (err.code === "auth/weak-password") {
-        errorText = "Password terlalu lemah (minimal 6 karakter).";
+         errorText = "Password terlalu lemah (minimal 6 karakter).";
       }
-      setErrorMessage(errorText);
+      setLocalError(`ERROR: ${errorText}`);
     } finally {
-      setIsFirebaseLoading(false);
+      setLocalLoading(false);
     }
   };
 
-  return (
-    <div className="max-w-xl mx-auto w-full px-4 relative z-10 mb-12">
-      <div className={`p-6 md:p-8 rounded-xl border crt-screen transition-all duration-300 relative ${
-        isDark 
-          ? "bg-[#0a0a0a]/90 border-[#a78bfa]/40 text-[#a78bfa] shadow-[0_0_20px_rgba(167,139,250,0.15)]" 
-          : "bg-white/95 border-indigo-500/40 text-indigo-800 shadow-[0_4px_30px_rgba(99,102,241,0.1)]"
-      }`}>
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className={`p-3 rounded-full mb-3 ${
-            isDark ? "bg-[#a78bfa]/10 text-[#a78bfa] border border-[#a78bfa]/20" : "bg-indigo-100 text-indigo-600"
-          }`}>
-            <Lock className="w-8 h-8 animate-pulse" />
-          </div>
-          <h2 className="text-lg md:text-xl font-bold tracking-[0.2em] uppercase font-sans">
-            VIP ACCESS PORTAL
+  if (!hasConfig) {
+    return (
+      <div className="max-w-md mx-auto w-full px-4 relative z-10">
+        <div className={`p-6 rounded-xl border text-center ${
+          isDark ? "bg-[#0a0a0a]/90 border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.1)]" : "bg-white/90 border-red-500/30 shadow-[0_8px_30px_rgba(239,68,68,0.1)]"
+        }`}>
+          <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-3 animate-pulse" />
+          <h2 className={`text-lg font-bold font-sans uppercase mb-2 ${isDark ? "text-red-400" : "text-red-600"}`}>
+            Sistem Terkunci
           </h2>
-          <p className="text-xs opacity-75 font-mono mt-1 mb-4">
-            SECURE AUTHENTICATION GATEWAY
+          <p className={`text-xs font-mono mb-4 ${isDark ? "text-red-300/70" : "text-red-700/70"}`}>
+            Kredensial Firebase belum dikonfigurasi. Anda harus mengatur API Key terlebih dahulu.
           </p>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="py-2.5 px-6 rounded border font-mono text-[10px] uppercase tracking-widest font-bold bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20 transition-all cursor-pointer"
+          >
+            Buka Pengaturan Sistem
+          </button>
+        </div>
+        {showSettings && (
+          <SettingsModal
+            onClose={() => setShowSettings(false)}
+            onSave={handleSaveConfig}
+            isDark={isDark}
+            initialConfig={getSavedFirebaseConfig()}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-md mx-auto w-full px-4 relative z-10 mb-12">
+      <div className={`p-6 md:p-8 rounded-xl border crt-screen transition-all duration-300 ${
+        isDark 
+          ? "bg-[#0a0a0a]/95 border-[#a78bfa]/30 shadow-[0_0_30px_rgba(167,139,250,0.15)]" 
+          : "bg-white/95 border-indigo-500/30 shadow-[0_8px_30px_rgba(99,102,241,0.15)]"
+      }`}>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded border ${
+              isDark ? "border-[#a78bfa]/30 bg-[#a78bfa]/10 text-[#a78bfa]" : "border-indigo-500/30 bg-indigo-50 text-indigo-600"
+            }`}>
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className={`font-bold font-sans tracking-widest uppercase text-sm ${isDark ? "text-[#a78bfa]" : "text-indigo-900"}`}>
+                VIP ACCESS PORTAL
+              </h2>
+              <p className={`text-[9px] font-mono tracking-widest uppercase ${isDark ? "opacity-50" : "text-indigo-600/60"}`}>
+                SECURE AUTHENTICATION GATEWAY
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowSettings(true)}
+            className={`p-1.5 rounded transition-colors ${
+              isDark ? "hover:bg-neutral-800 text-neutral-500 hover:text-[#a78bfa]" : "hover:bg-neutral-100 text-neutral-400 hover:text-indigo-600"
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Error Message */}
-        {errorMessage && (
-          <div className="p-4 mb-6 rounded-lg border border-red-500/40 bg-red-950/20 text-red-400 text-xs font-mono leading-relaxed">
-            <p className="font-bold mb-1">⚠️ SYSTEM WARNING:</p>
-            <p>{errorMessage}</p>
+        {localError && (
+          <div className="mb-5 p-3 rounded border border-red-500/30 bg-red-950/20 text-red-500 text-[10px] font-mono flex items-start gap-2 animate-fade-in">
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <p className="leading-relaxed">{localError}</p>
           </div>
         )}
 
-        {/* Auth Forms */}
-        <div className="space-y-4">
-          <form onSubmit={handleEmailAuth} className="space-y-3 font-mono">
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80">EMAIL ADDRESS</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 w-4 h-4 opacity-50" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full p-2.5 pl-9 rounded border text-xs bg-black/60 outline-none transition-all ${
-                    isDark ? "border-[#a78bfa]/30 text-white focus:border-[#a78bfa]" : "border-indigo-500/30 text-indigo-900 focus:border-indigo-500"
-                  }`}
-                  placeholder="agent@cyber.ai"
-                  required
-                />
-              </div>
+        <form onSubmit={handleEmailAuth} className="space-y-4 mb-6">
+          <div>
+            <label className={`block text-[10px] font-mono tracking-widest uppercase mb-1.5 ${isDark ? "text-[#a78bfa]/70" : "text-indigo-700/70"}`}>
+              EMAIL ADDRESS
+            </label>
+            <div className="relative">
+              <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? "text-neutral-500" : "text-neutral-400"}`} />
+              <input 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-xs font-mono outline-none transition-colors ${
+                  isDark 
+                    ? "bg-black/50 border-neutral-800 focus:border-[#a78bfa]/50 text-white placeholder-neutral-700" 
+                    : "bg-neutral-50 border-neutral-200 focus:border-indigo-500/50 text-neutral-900 placeholder-neutral-400"
+                }`}
+                placeholder="agent@cyber.ai"
+              />
             </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-1 opacity-80">PASSWORD</label>
-              <div className="relative">
-                <Key className="absolute left-3 top-3 w-4 h-4 opacity-50" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full p-2.5 pl-9 rounded border text-xs bg-black/60 outline-none transition-all ${
-                    isDark ? "border-[#a78bfa]/30 text-white focus:border-[#a78bfa]" : "border-indigo-500/30 text-indigo-900 focus:border-indigo-500"
-                  }`}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
-            
-            <button
-              type="submit"
-              disabled={isLoggingIn || isFirebaseLoading}
-              className={`w-full py-3 px-5 mt-2 rounded-lg text-sm uppercase tracking-wider font-bold transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 ${
-                isDark
-                  ? "bg-[#a78bfa] text-black hover:bg-white hover:shadow-[0_0_20px_rgba(167,139,250,0.4)]"
-                  : "bg-indigo-600 text-white hover:bg-indigo-500 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
-              } disabled:opacity-50`}
-            >
-              {isFirebaseLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
-              {isRegisterMode ? "REGISTER NEW AGENT" : "LOGIN TO TERMINAL"}
-            </button>
-          </form>
-
-          <div className="text-center text-[10px] font-mono opacity-80">
-            {isRegisterMode ? "Sudah punya akses?" : "Belum punya akses?"}
-            <button 
-              type="button" 
-              onClick={() => setIsRegisterMode(!isRegisterMode)} 
-              className={`ml-2 font-bold cursor-pointer underline ${isDark ? "text-[#a78bfa]" : "text-indigo-600"}`}
-            >
-              {isRegisterMode ? "Login di sini" : "Daftar di sini"}
-            </button>
           </div>
-
-          <div className="relative flex items-center py-2">
-            <div className="flex-grow border-t border-neutral-700/30"></div>
-            <span className="flex-shrink-0 mx-4 text-[10px] uppercase font-mono opacity-50">OR</span>
-            <div className="flex-grow border-t border-neutral-700/30"></div>
+          
+          <div>
+            <label className={`block text-[10px] font-mono tracking-widest uppercase mb-1.5 ${isDark ? "text-[#a78bfa]/70" : "text-indigo-700/70"}`}>
+              PASSWORD
+            </label>
+            <div className="relative">
+              <Key className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? "text-neutral-500" : "text-neutral-400"}`} />
+              <input 
+                type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-xs font-mono outline-none transition-colors ${
+                  isDark 
+                    ? "bg-black/50 border-neutral-800 focus:border-[#a78bfa]/50 text-white placeholder-neutral-700" 
+                    : "bg-neutral-50 border-neutral-200 focus:border-indigo-500/50 text-neutral-900 placeholder-neutral-400"
+                }`}
+                placeholder="••••••••"
+              />
+            </div>
           </div>
 
           <button
-            onClick={handleGoogleLogin}
-            disabled={isLoggingIn || isFirebaseLoading}
-            type="button"
-            className={`w-full py-3 px-5 rounded-lg font-mono text-xs uppercase tracking-wider font-bold transition-all duration-300 flex items-center justify-center gap-3 border cursor-pointer ${
+            type="submit"
+            disabled={isLoggingIn || localLoading}
+            className={`w-full py-3 px-4 rounded-lg font-mono text-[11px] font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
               isDark
-                ? "bg-black/50 border-[#a78bfa]/40 text-white hover:bg-[#a78bfa]/10"
-                : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-            } disabled:opacity-50`}
+                ? "bg-[#a78bfa]/10 border border-[#a78bfa]/30 text-[#a78bfa] hover:bg-[#a78bfa] hover:text-black hover:shadow-[0_0_20px_rgba(167,139,250,0.4)]"
+                : "bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:shadow-[0_0_20px_rgba(99,102,241,0.4)]"
+            } ${(isLoggingIn || localLoading) ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" />
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" />
-            </svg>
-            LOGIN VIA GOOGLE
+            {(isLoggingIn || localLoading) ? (
+              <><RefreshCw className="w-4 h-4 animate-spin" /> MENGOTENTIKASI...</>
+            ) : (
+              isRegisterMode ? "DAFTAR SEKARANG" : "LOGIN TO TERMINAL"
+            )}
+          </button>
+        </form>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setIsRegisterMode(!isRegisterMode)}
+            className={`text-[10px] font-mono tracking-wider transition-colors cursor-pointer ${
+              isDark ? "text-neutral-400 hover:text-[#a78bfa]" : "text-neutral-500 hover:text-indigo-600"
+            }`}
+          >
+            {isRegisterMode ? "Sudah punya akses? Login di sini" : "Belum punya akses? Daftar di sini"}
           </button>
         </div>
+
+        {!isNative && (
+          <>
+            <div className="relative my-6 flex items-center justify-center">
+              <div className={`absolute inset-0 flex items-center`}>
+                <div className={`w-full border-t ${isDark ? "border-neutral-800" : "border-neutral-200"}`}></div>
+              </div>
+              <div className={`relative px-4 text-[9px] font-mono tracking-widest uppercase ${isDark ? "bg-[#0a0a0a] text-neutral-600" : "bg-white text-neutral-400"}`}>
+                OR
+              </div>
+            </div>
+
+            <button
+              onClick={handleGoogleLogin}
+              disabled={isLoggingIn || localLoading}
+              className={`w-full py-3 px-4 rounded-lg border font-mono text-[11px] font-bold tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-3 cursor-pointer ${
+                isDark
+                  ? "bg-black border-neutral-800 text-white hover:border-neutral-600 hover:bg-neutral-900"
+                  : "bg-white border-neutral-200 text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50"
+              } ${(isLoggingIn || localLoading) ? "opacity-50 cursor-not-allowed" : ""}`}
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              LOGIN VIA GOOGLE
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
