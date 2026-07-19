@@ -307,7 +307,6 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
                     SYNC DATA
                   </button>
                 </div>
-                </div>
 
                 <div className={`border rounded-lg overflow-x-auto custom-scrollbar font-mono text-[11px] ${
                   isDark ? "border-neutral-800 bg-black/40" : "border-neutral-200 bg-neutral-50/50"
