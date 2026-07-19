@@ -7,6 +7,7 @@ import {
   LogOut, 
   RefreshCw, 
   Shield, 
+  ShieldAlert,
   Mail, 
   CheckCircle2, 
   AlertTriangle,
