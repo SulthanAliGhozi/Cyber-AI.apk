@@ -32,6 +32,7 @@ export default function App() {
   const [decryptLogs, setDecryptLogs] = useState<string[]>([]);
   
   const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [activeIframeUrl, setActiveIframeUrl] = useState<string | null>(null);
   
   // 1. Automatic Dark Mode Detection
   useEffect(() => {
@@ -237,10 +238,10 @@ export default function App() {
         },
       }} />
       <SplashScreen />
-      {!permissionsGranted && (
+      {!permissionsGranted && !activeIframeUrl && (
         <PermissionBlocker onGranted={() => setPermissionsGranted(true)} />
       )}
-      {permissionsGranted && (
+      {permissionsGranted && !activeIframeUrl && (
         <PullToRefresh isDark={isDark} onRefresh={() => { 
           // Clear caches when pulling to refresh to ensure latest updates are fetched
           if ('caches' in window) {
@@ -457,10 +458,9 @@ export default function App() {
                       const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
                       if (isApp && (window as any).cordova && (window as any).cordova.InAppBrowser) {
                          (window as any).cordova.InAppBrowser.open('https://0xriki.ai/?masuk=1', '_blank', 'location=no,zoom=no,toolbar=no,hideurlbar=yes');
-                      } else if (isApp) {
-                        window.location.href = "https://0xriki.ai/?masuk=1";
                       } else {
-                        window.open("https://0xriki.ai/?masuk=1", "_blank");
+                        // For Web/iOS Users, display inside an internal iframe so domain remains hidden
+                        setActiveIframeUrl("https://0xriki.ai/?masuk=1");
                       }
                     }}
                     className="py-1.5 px-3 border border-[#a78bfa]/50 bg-black text-xs text-[#a78bfa] rounded hover:bg-[#a78bfa]/10 transition-all text-center tracking-wider cursor-pointer font-mono font-bold"
@@ -476,6 +476,30 @@ export default function App() {
 
 
       </PullToRefresh>
+
+      {/* Internal Web View (Iframe) for Non-Android Users */}
+      {activeIframeUrl && (
+        <div className="fixed inset-0 z-[999999] bg-black">
+           <div className="absolute top-0 left-0 right-0 h-10 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between px-4 z-10">
+              <div className="text-[#a78bfa] font-mono text-xs font-bold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                CYBER CORE SECURE CONNECTION
+              </div>
+              <button 
+                onClick={() => setActiveIframeUrl(null)}
+                className="text-neutral-400 hover:text-white p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+           </div>
+           <iframe 
+              src={activeIframeUrl} 
+              className="w-full h-full pt-10 border-none"
+              title="Cyber Core"
+              allow="camera; microphone; geolocation"
+           />
+        </div>
+      )}
 
       {/* Floating WhatsApp Support Button - Rendered at root level outside the min-h-screen container to guarantee true viewport fixed-positioning on all mobile browsers */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] group flex flex-col items-end">
