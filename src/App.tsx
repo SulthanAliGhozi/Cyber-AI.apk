@@ -9,6 +9,7 @@ import { Shield, ShieldAlert, Wifi, Activity, RefreshCw, X } from "lucide-react"
 import { getSavedFirebaseConfig, getEnvFirebaseConfig } from "./lib/firebase";
 import { Browser } from '@capacitor/browser';
 import { PullToRefresh } from './components/PullToRefresh';
+import { Toaster } from 'react-hot-toast';
 
 interface UserProfile {
   email: string;
@@ -223,6 +224,14 @@ export default function App() {
 
   return (
     <>
+      <Toaster position="top-center" reverseOrder={false} toastOptions={{
+        className: 'font-mono text-sm shadow-xl',
+        style: {
+          background: isDark ? '#1a1a1a' : '#ffffff',
+          color: isDark ? '#a78bfa' : '#4f46e5',
+          border: isDark ? '1px solid rgba(167, 139, 250, 0.2)' : '1px solid rgba(99, 102, 241, 0.2)',
+        },
+      }} />
       <SplashScreen />
       <PullToRefresh isDark={isDark} onRefresh={() => { window.location.reload(); }}>
         <div className={`min-h-screen relative flex flex-col font-sans overflow-x-hidden select-none transition-colors duration-500 terminal-grid ${

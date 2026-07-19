@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
+import toast from 'react-hot-toast';
 import { 
   Users, 
   UserPlus, 
@@ -56,10 +57,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
       setUsers(list);
     } catch (err: any) {
       console.error("Error fetching users:", err);
-      setMessage({
-        text: `Gagal memuat data pengguna: ${err.message || String(err)}`,
-        isError: true,
-      });
+      toast.error(`Gagal memuat data pengguna: ${err.message || String(err)}`);
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +83,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
             encoding: Encoding.UTF8,
             recursive: true
           });
-          setMessage({ text: `SISTEM: Database berhasil dicadangkan ke folder Documents/Cyber AI/!`, isError: false });
+          toast.success("Database dicadangkan ke Documents/Cyber AI/");
         } catch (fsErr) {
           console.error("FS Error", fsErr);
           // Fallback to Data if Documents fails
@@ -95,7 +93,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
             directory: Directory.Data,
             encoding: Encoding.UTF8
           });
-          setMessage({ text: `SISTEM: Database berhasil disimpan secara internal. Harap izinkan akses File & Media di Pengaturan Android.`, isError: false });
+          toast.success("Database disimpan secara internal. Harap izinkan akses file.");
         }
       } else {
         const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -103,10 +101,10 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
         linkElement.setAttribute('href', dataUri);
         linkElement.setAttribute('download', exportFileDefaultName);
         linkElement.click();
-        setMessage({ text: "SISTEM: Database berhasil dicadangkan (backup) ke perangkat Anda!", isError: false });
+        toast.success("Database berhasil didownload!");
       }
     } catch(err) {
-      setMessage({ text: "ERROR: Gagal membackup database.", isError: true });
+      toast.error("Gagal membackup database.");
     }
   };
 
@@ -120,13 +118,10 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
 
     try {
       await updateUserRole(targetEmail, newRole, userRole);
-      setMessage({ text: `Role untuk ${targetEmail} berhasil diperbarui.`, isError: false });
+      toast.success(`Role untuk ${targetEmail} berhasil diperbarui.`);
       await fetchUsers();
     } catch (err: any) {
-      setMessage({
-        text: `Gagal mengubah role: ${err.message || String(err)}`,
-        isError: true,
-      });
+      toast.error(`Gagal mengubah role: ${err.message || String(err)}`);
     } finally {
       setActionLoading(false);
     }
@@ -142,13 +137,10 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
 
     try {
       await removeUser(emailToRemove, userRole);
-      setMessage({ text: `Pengguna ${emailToRemove} berhasil dihapus.`, isError: false });
+      toast.success(`Pengguna ${emailToRemove} berhasil dihapus.`);
       await fetchUsers();
     } catch (err: any) {
-      setMessage({
-        text: `Gagal menghapus pengguna: ${err.message || String(err)}`,
-        isError: true,
-      });
+      toast.error(`Gagal menghapus pengguna: ${err.message || String(err)}`);
     } finally {
       setActionLoading(false);
     }
