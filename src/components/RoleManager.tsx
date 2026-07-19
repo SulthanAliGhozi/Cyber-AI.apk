@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 import { 
   Users, 
   UserPlus, 
@@ -69,19 +71,40 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
     }
   }, [user.role]);
 
-  const handleBackupDatabase = () => {
+  const handleBackupDatabase = async () => {
     try {
       const dataStr = JSON.stringify(users, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      
       const exportFileDefaultName = `cyber-ai-db-${new Date().toISOString().split('T')[0]}.json`;
 
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-      
-      setMessage({ text: "SISTEM: Database berhasil dicadangkan (backup) ke perangkat Anda!", isError: false });
+      if (Capacitor.isNativePlatform()) {
+        try {
+          await Filesystem.writeFile({
+            path: `Cyber AI/${exportFileDefaultName}`,
+            data: dataStr,
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8,
+            recursive: true
+          });
+          setMessage({ text: `SISTEM: Database berhasil dicadangkan ke folder Documents/Cyber AI/!`, isError: false });
+        } catch (fsErr) {
+          console.error("FS Error", fsErr);
+          // Fallback to Data if Documents fails
+          await Filesystem.writeFile({
+            path: exportFileDefaultName,
+            data: dataStr,
+            directory: Directory.Data,
+            encoding: Encoding.UTF8
+          });
+          setMessage({ text: `SISTEM: Database berhasil disimpan secara internal. Harap izinkan akses File & Media di Pengaturan Android.`, isError: false });
+        }
+      } else {
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+        setMessage({ text: "SISTEM: Database berhasil dicadangkan (backup) ke perangkat Anda!", isError: false });
+      }
     } catch(err) {
       setMessage({ text: "ERROR: Gagal membackup database.", isError: true });
     }

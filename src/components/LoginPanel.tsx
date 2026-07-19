@@ -44,8 +44,26 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
     const saved = localStorage.getItem('cyber_saved_accounts');
     if (saved) {
       try {
-        setSavedAccounts(JSON.parse(saved));
-      } catch (e) {}
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.length > 0) {
+          setSavedAccounts(parsed);
+        } else {
+          // Pre-fill default admin account
+          const defaultAcc = [{ email: 'admin@cyber.ai', password: 'adminpassword' }]; // Placeholder password
+          setSavedAccounts(defaultAcc);
+          localStorage.setItem('cyber_saved_accounts', JSON.stringify(defaultAcc));
+        }
+      } catch (e) {
+        // Pre-fill default on error
+        const defaultAcc = [{ email: 'admin@cyber.ai', password: 'adminpassword' }];
+        setSavedAccounts(defaultAcc);
+        localStorage.setItem('cyber_saved_accounts', JSON.stringify(defaultAcc));
+      }
+    } else {
+      // Pre-fill default if not exists
+      const defaultAcc = [{ email: 'admin@cyber.ai', password: 'adminpassword' }];
+      setSavedAccounts(defaultAcc);
+      localStorage.setItem('cyber_saved_accounts', JSON.stringify(defaultAcc));
     }
   }, []);
 
