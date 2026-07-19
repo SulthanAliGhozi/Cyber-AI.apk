@@ -192,11 +192,12 @@ export default function App() {
 
         setTimeout(() => {
           setShowDecryptor(false);
-          // RESPONSIVE UX LOGIC: Desktop -> Redirect, Mobile/Tablet -> Webview
-          if (window.innerWidth < 1024) {
+          // RESPONSIVE UX LOGIC: App -> Webview, Browser -> New Tab
+          const isApp = window.navigator.userAgent.toLowerCase().includes('wv');
+          if (isApp) {
             setShowPortal(true);
           } else {
-            window.location.href = "https://0xriki.ai/?masuk=1";
+            window.open("https://0xriki.ai/?masuk=1", "_blank");
           }
         }, 1000);
 
@@ -348,6 +349,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      </div>
 
       {/* Hacking Decryption Overlay */}
       {showDecryptor && (
@@ -409,10 +411,11 @@ export default function App() {
                     onClick={() => {
                       setShowDecryptor(false);
                       playBeep(800, "sine", 0.1);
-                      if (window.innerWidth < 1024) {
+                      const isApp = window.navigator.userAgent.toLowerCase().includes('wv');
+                      if (isApp) {
                         setShowPortal(true);
                       } else {
-                        window.location.href = "https://0xriki.ai/?masuk=1";
+                        window.open("https://0xriki.ai/?masuk=1", "_blank");
                       }
                     }}
                     className="py-1.5 px-3 border border-[#a78bfa]/50 bg-black text-xs text-[#a78bfa] rounded hover:bg-[#a78bfa]/10 transition-all text-center tracking-wider cursor-pointer font-mono font-bold"
@@ -425,7 +428,6 @@ export default function App() {
           </div>
         </div>
       )}
-      </div>
 
       {/* High-security Webview Portal Workspace */}
       {showPortal && (

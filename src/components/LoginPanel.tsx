@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ShieldAlert, ShieldCheck, HelpCircle, Lock, RefreshCw, Terminal, Mail, Key } from "lucide-react";
+import { ShieldAlert, ShieldCheck, HelpCircle, Lock, RefreshCw, Terminal, Mail, Key, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { 
   getSavedFirebaseConfig, 
   getEnvFirebaseConfig, 
@@ -26,6 +26,7 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
   // Email/Password state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
 
   // Load configuration on mount
@@ -226,17 +227,24 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
             <div className="relative">
               <Key className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? "text-neutral-500" : "text-neutral-400"}`} />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-xs font-mono outline-none transition-colors ${
+                className={`w-full pl-9 pr-10 py-2.5 rounded-lg border text-xs font-mono outline-none transition-colors ${
                   isDark 
                     ? "bg-black/50 border-neutral-800 focus:border-[#a78bfa]/50 text-white placeholder-neutral-700" 
                     : "bg-neutral-50 border-neutral-200 focus:border-indigo-500/50 text-neutral-900 placeholder-neutral-400"
                 }`}
                 placeholder="••••••••"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer hover:scale-110 transition-transform ${isDark ? "text-neutral-500 hover:text-[#a78bfa]" : "text-neutral-400 hover:text-indigo-600"}`}
+              >
+                {showPassword ? <EyeOff className="w-full h-full" /> : <Eye className="w-full h-full" />}
+              </button>
             </div>
           </div>
 
