@@ -1,6 +1,9 @@
 name: Build Android APK
 on:
   workflow_dispatch: # Memungkinkan Anda memicu build secara manual
+  push:
+    branches:
+      - main
 
 jobs:
   build:
