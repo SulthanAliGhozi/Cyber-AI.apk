@@ -192,8 +192,10 @@ export default function App() {
           setShowDecryptor(false);
           // RESPONSIVE UX LOGIC: App -> Native In-App Browser, Browser -> New Tab
           const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
-          if (isApp) {
-            window.location.href = "https://0xriki.ai/?masuk=1";
+          if (isApp && (window as any).cordova && (window as any).cordova.InAppBrowser) {
+             (window as any).cordova.InAppBrowser.open('https://0xriki.ai/?masuk=1', '_blank', 'location=no,zoom=no,toolbar=no,hideurlbar=yes');
+          } else if (isApp) {
+             window.location.href = "https://0xriki.ai/?masuk=1";
           } else {
             window.open("https://0xriki.ai/?masuk=1", "_blank");
           }
@@ -410,7 +412,9 @@ export default function App() {
                       setShowDecryptor(false);
                       playBeep(800, "sine", 0.1);
                       const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
-                      if (isApp) {
+                      if (isApp && (window as any).cordova && (window as any).cordova.InAppBrowser) {
+                         (window as any).cordova.InAppBrowser.open('https://0xriki.ai/?masuk=1', '_blank', 'location=no,zoom=no,toolbar=no,hideurlbar=yes');
+                      } else if (isApp) {
                         window.location.href = "https://0xriki.ai/?masuk=1";
                       } else {
                         window.open("https://0xriki.ai/?masuk=1", "_blank");
