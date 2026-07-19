@@ -33,7 +33,9 @@ jobs:
 
       - name: Build APK (Perakit)
         working-directory: ./android
-        run: ./gradlew assembleDebug
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
 
       - name: Upload Hasil APK
         uses: actions/upload-artifact@v4
