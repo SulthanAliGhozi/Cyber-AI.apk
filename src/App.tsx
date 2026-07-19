@@ -193,11 +193,7 @@ export default function App() {
           // RESPONSIVE UX LOGIC: App -> Native In-App Browser, Browser -> New Tab
           const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
           if (isApp) {
-            try {
-              await Browser.open({ url: "https://0xriki.ai/?masuk=1" });
-            } catch (err) {
-              window.open("https://0xriki.ai/?masuk=1", "_blank");
-            }
+            window.location.href = "https://0xriki.ai/?masuk=1";
           } else {
             window.open("https://0xriki.ai/?masuk=1", "_blank");
           }
@@ -415,11 +411,7 @@ export default function App() {
                       playBeep(800, "sine", 0.1);
                       const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
                       if (isApp) {
-                        try {
-                          await Browser.open({ url: "https://0xriki.ai/?masuk=1" });
-                        } catch (err) {
-                          window.open("https://0xriki.ai/?masuk=1", "_blank");
-                        }
+                        window.location.href = "https://0xriki.ai/?masuk=1";
                       } else {
                         window.open("https://0xriki.ai/?masuk=1", "_blank");
                       }

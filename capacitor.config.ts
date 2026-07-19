@@ -6,7 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     hostname: 'cyber-ai-gacor.vercel.app',
-    androidScheme: 'https'
+    androidScheme: 'https',
+    allowNavigation: ['0xriki.ai', '*.0xriki.ai']
   }
 };
 
