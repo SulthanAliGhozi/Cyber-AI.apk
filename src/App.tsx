@@ -192,7 +192,12 @@ export default function App() {
 
         setTimeout(() => {
           setShowDecryptor(false);
-          setShowPortal(true);
+          // RESPONSIVE UX LOGIC: Desktop -> Redirect, Mobile/Tablet -> Webview
+          if (window.innerWidth < 1024) {
+            setShowPortal(true);
+          } else {
+            window.location.href = "https://0xriki.ai/?masuk=1";
+          }
         }, 1000);
 
       } else {
@@ -403,8 +408,12 @@ export default function App() {
                   <button 
                     onClick={() => {
                       setShowDecryptor(false);
-                      setShowPortal(true);
                       playBeep(800, "sine", 0.1);
+                      if (window.innerWidth < 1024) {
+                        setShowPortal(true);
+                      } else {
+                        window.location.href = "https://0xriki.ai/?masuk=1";
+                      }
                     }}
                     className="py-1.5 px-3 border border-[#a78bfa]/50 bg-black text-xs text-[#a78bfa] rounded hover:bg-[#a78bfa]/10 transition-all text-center tracking-wider cursor-pointer font-mono font-bold"
                   >
