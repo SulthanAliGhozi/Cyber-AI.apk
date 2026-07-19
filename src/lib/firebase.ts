@@ -151,6 +151,7 @@ export interface UserData {
   name?: string;
   location?: string;
   lastLoginAt?: string;
+  activityLogs?: { action: string; time: string; location: string }[];
 }
 
 /**
@@ -195,18 +196,38 @@ export const getUserRole = async (email: string, name?: string): Promise<UserRol
 };
 
 /**
- * Logs the user's activity and location
+ * Logs the user's activity and location with specific actions
  */
-export const updateUserActivity = async (email: string, locationStr: string): Promise<void> => {
+export const updateUserActivity = async (email: string, locationStr: string, action: string = "Login"): Promise<void> => {
   const normalized = email.trim().toLowerCase();
   if (!normalized) return;
 
   const dbInstance = getFirebaseDb();
   if (dbInstance) {
     try {
-      await setDoc(doc(dbInstance, "users", normalized), {
+      const docRef = doc(dbInstance, "users", normalized);
+      const docSnap = await getDoc(docRef);
+      
+      let logs = [];
+      if (docSnap.exists()) {
+        const data = docSnap.data() as UserData;
+        logs = data.activityLogs || [];
+      }
+      
+      // Add new log to the beginning, keep only last 10 to save space
+      const newLog = {
+        action,
+        time: new Date().toISOString(),
+        location: locationStr
+      };
+      
+      logs.unshift(newLog);
+      if (logs.length > 10) logs = logs.slice(0, 10);
+
+      await setDoc(docRef, {
         location: locationStr,
-        lastLoginAt: new Date().toISOString()
+        lastLoginAt: new Date().toISOString(),
+        activityLogs: logs
       }, { merge: true });
     } catch (err) {
       console.error("Failed to log activity:", err);

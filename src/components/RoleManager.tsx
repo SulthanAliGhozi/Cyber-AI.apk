@@ -364,8 +364,22 @@ export const RoleManager: React.FC<RoleManagerProps> = ({
                                 </span>
                               </td>
                               <td className="p-3">
-                                <div className="text-[10px] opacity-80 mb-0.5">{u.location || "Belum ada data GPS"}</div>
-                                <div className="text-[9px] opacity-50">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('id-ID') : "Belum pernah login"}</div>
+                                {u.activityLogs && u.activityLogs.length > 0 ? (
+                                  <div className="flex flex-col gap-2 max-h-24 overflow-y-auto custom-scrollbar pr-2">
+                                    {u.activityLogs.slice(0, 3).map((log, i) => (
+                                      <div key={i} className={`p-1.5 rounded border text-[9px] ${isDark ? "bg-black/30 border-neutral-800" : "bg-white/50 border-neutral-200"}`}>
+                                        <div className="font-bold text-blue-400 mb-0.5 uppercase">{log.action}</div>
+                                        <div className="opacity-70">{log.location}</div>
+                                        <div className="opacity-50">{new Date(log.time).toLocaleString('id-ID')}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="text-[10px] opacity-80 mb-0.5">{u.location || "Belum ada data GPS"}</div>
+                                    <div className="text-[9px] opacity-50">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('id-ID') : "Belum pernah login"}</div>
+                                  </>
+                                )}
                               </td>
                               <td className="p-3 text-right">
                                 {isOwner ? (

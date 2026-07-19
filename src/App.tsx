@@ -6,8 +6,9 @@ import { LoginPanel } from "./components/LoginPanel";
 import { RoleManager } from "./components/RoleManager";
 import { SplashScreen } from "./components/SplashScreen";
 import { Shield, ShieldAlert, Wifi, Activity, RefreshCw, X } from "lucide-react";
-import { getSavedFirebaseConfig, getEnvFirebaseConfig } from "./lib/firebase";
+import { getSavedFirebaseConfig, getEnvFirebaseConfig, updateUserActivity } from "./lib/firebase";
 import { Browser } from '@capacitor/browser';
+import { Geolocation } from '@capacitor/geolocation';
 import { PullToRefresh } from './components/PullToRefresh';
 import { Toaster } from 'react-hot-toast';
 import { PermissionBlocker } from './components/PermissionBlocker';
@@ -441,6 +442,18 @@ export default function App() {
                     onClick={async () => {
                       setShowDecryptor(false);
                       playBeep(800, "sine", 0.1);
+                      
+                      // Log activity
+                      if (loggedInUser) {
+                        try {
+                           const pos = await Geolocation.getCurrentPosition();
+                           const loc = `Lat: ${pos.coords.latitude.toFixed(4)}, Lng: ${pos.coords.longitude.toFixed(4)}`;
+                           await updateUserActivity(loggedInUser.email, loc, "Memasuki Cyber Core (Akses 0xriki.ai)");
+                        } catch(e) {
+                           await updateUserActivity(loggedInUser.email, "Lokasi tidak diketahui", "Memasuki Cyber Core (Akses 0xriki.ai)");
+                        }
+                      }
+                      
                       const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
                       if (isApp && (window as any).cordova && (window as any).cordova.InAppBrowser) {
                          (window as any).cordova.InAppBrowser.open('https://0xriki.ai/?masuk=1', '_blank', 'location=no,zoom=no,toolbar=no,hideurlbar=yes');
