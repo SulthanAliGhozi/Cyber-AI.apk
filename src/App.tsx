@@ -4,6 +4,7 @@ import { GlitchText } from "./components/GlitchText";
 import { CyberConsole } from "./components/CyberConsole";
 import { LoginPanel } from "./components/LoginPanel";
 import { WhitelistManager } from "./components/WhitelistManager";
+import { SplashScreen } from "./components/SplashScreen";
 import { Shield, ShieldAlert, Wifi, Activity, RefreshCw, X } from "lucide-react";
 import { getSavedFirebaseConfig, getEnvFirebaseConfig } from "./lib/firebase";
 
@@ -220,6 +221,7 @@ export default function App() {
 
   return (
     <>
+      <SplashScreen />
       <div className={`min-h-screen relative flex flex-col font-sans overflow-x-hidden select-none transition-colors duration-500 terminal-grid ${
         isDark ? "bg-[#050505] text-[#a78bfa]" : "bg-neutral-50 text-neutral-900"
       }`}>
