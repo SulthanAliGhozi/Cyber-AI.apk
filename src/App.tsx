@@ -26,9 +26,6 @@ export default function App() {
   const [showDecryptor, setShowDecryptor] = useState(false);
   const [decryptProgress, setDecryptProgress] = useState(0);
   const [decryptLogs, setDecryptLogs] = useState<string[]>([]);
-
-  const [decryptProgress, setDecryptProgress] = useState(0);
-  const [decryptLogs, setDecryptLogs] = useState<string[]>([]);
   
   // 1. Automatic Dark Mode Detection
   useEffect(() => {
