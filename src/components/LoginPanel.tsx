@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ShieldAlert, ShieldCheck, HelpCircle, Lock, RefreshCw, Terminal, Mail, Key, Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { ShieldAlert, ShieldCheck, HelpCircle, Lock, RefreshCw, Terminal, Mail, Key, Eye, EyeOff, AlertTriangle, User, ChevronRight } from "lucide-react";
 import { 
   getSavedFirebaseConfig, 
   getEnvFirebaseConfig, 
@@ -28,6 +28,7 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [savedAccounts, setSavedAccounts] = useState<{email: string, password: string}[]>([]);
 
   // Load configuration on mount
   useEffect(() => {
@@ -38,6 +39,13 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
     } else {
       setHasConfig(false);
       onConfigChange(false);
+    }
+
+    const saved = localStorage.getItem('cyber_saved_accounts');
+    if (saved) {
+      try {
+        setSavedAccounts(JSON.parse(saved));
+      } catch (e) {}
     }
   }, []);
 
@@ -126,6 +134,17 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
       // Get or assign role
       const role = await getUserRole(userEmail, userName);
       
+      // Save credentials for quick login
+      const currentSaved = JSON.parse(localStorage.getItem('cyber_saved_accounts') || '[]');
+      const existing = currentSaved.findIndex((acc: any) => acc.email === userEmail);
+      if (existing >= 0) {
+        currentSaved[existing].password = password;
+      } else {
+        currentSaved.push({ email: userEmail, password: password });
+      }
+      localStorage.setItem('cyber_saved_accounts', JSON.stringify(currentSaved));
+      setSavedAccounts(currentSaved);
+      
       onLogin({
         email: userEmail,
         name: userName,
@@ -195,6 +214,42 @@ export const LoginPanel: React.FC<LoginPanelProps> = ({
           <div className="mb-5 p-3 rounded border border-red-500/30 bg-red-950/20 text-red-500 text-[10px] font-mono flex items-start gap-2 animate-fade-in">
             <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
             <p className="leading-relaxed">{errorMessage}</p>
+          </div>
+        )}
+
+        {savedAccounts.length > 0 && (
+          <div className="mb-6">
+            <label className={`block text-[10px] font-mono tracking-widest uppercase mb-2 ${isDark ? "text-[#a78bfa]/70" : "text-indigo-700/70"}`}>
+              AKUN TERSIMPAN (QUICK LOGIN)
+            </label>
+            <div className="flex flex-col gap-2">
+              {savedAccounts.map((acc, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setEmail(acc.email);
+                    setPassword(acc.password);
+                    setIsRegisterMode(false);
+                  }}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-all text-left group ${
+                    isDark
+                      ? "bg-black/40 border-neutral-800 hover:border-[#a78bfa]/50 hover:bg-[#a78bfa]/5"
+                      : "bg-neutral-50 border-neutral-200 hover:border-indigo-500/50 hover:bg-indigo-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-1.5 rounded-full ${isDark ? "bg-[#a78bfa]/10 text-[#a78bfa]" : "bg-indigo-100 text-indigo-600"}`}>
+                      <User className="w-4 h-4" />
+                    </div>
+                    <span className={`text-xs font-mono truncate ${isDark ? "text-neutral-300" : "text-neutral-700"}`}>
+                      {acc.email}
+                    </span>
+                  </div>
+                  <ChevronRight className={`w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity ${isDark ? "text-[#a78bfa]" : "text-indigo-600"}`} />
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

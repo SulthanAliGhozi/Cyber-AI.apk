@@ -224,9 +224,10 @@ export default function App() {
   return (
     <>
       <SplashScreen />
-      <div className={`min-h-screen relative flex flex-col font-sans overflow-x-hidden select-none transition-colors duration-500 terminal-grid ${
-        isDark ? "bg-[#050505] text-[#a78bfa]" : "bg-neutral-50 text-neutral-900"
-      }`}>
+      <PullToRefresh isDark={isDark} onRefresh={() => { window.location.reload(); }}>
+        <div className={`min-h-screen relative flex flex-col font-sans overflow-x-hidden select-none transition-colors duration-500 terminal-grid ${
+          isDark ? "bg-[#050505] text-[#a78bfa]" : "bg-neutral-50 text-neutral-900"
+        }`}>
       
       {/* Dynamic Rain Canvas Background */}
       <TerminalBackground isDark={isDark} />
@@ -283,8 +284,7 @@ export default function App() {
         </div>
       </header>
 
-      <PullToRefresh isDark={isDark} onRefresh={() => { window.location.reload(); }}>
-        <main className="flex-1 relative z-10 max-w-7xl mx-auto w-full px-4 py-8 sm:py-12 flex flex-col items-center justify-center">
+      <main className="flex-1 relative z-10 max-w-7xl mx-auto w-full px-4 py-8 sm:py-12 flex flex-col items-center justify-center">
           
           {/* Banner Section */}
           <div className="text-center max-w-3xl mx-auto px-4 mb-8 select-none">
@@ -336,7 +336,6 @@ export default function App() {
           )}
 
         </main>
-      </PullToRefresh>
 
       {/* System Status Footer */}
       <footer className={`relative z-10 border-t py-6 text-center text-xs font-mono transition-all duration-300 ${
@@ -433,6 +432,8 @@ export default function App() {
         </div>
       )}
 
+
+      </PullToRefresh>
 
       {/* Floating WhatsApp Support Button - Rendered at root level outside the min-h-screen container to guarantee true viewport fixed-positioning on all mobile browsers */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] group flex flex-col items-end">
