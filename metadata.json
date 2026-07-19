@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Cyber AI",
+  "description": "A futuristic hacker-themed security landing page and interactive system console with secure Google OAuth authentication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

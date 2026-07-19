@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cyber AI</string>
+    <string name="title_activity_main">Cyber AI</string>
+    <string name="package_name">com.cyber.ai.app</string>
+    <string name="custom_url_scheme">com.cyber.ai.app</string>
+</resources>

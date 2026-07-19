@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /whitelist_emails/{email} {
+      // Allow s.a.ghozi@gmail.com and sulthanalighozi@gmail.com full access to view, add, or delete whitelist items
+      allow read, write: if request.auth != null && 
+                          request.auth.token.email != null && 
+                          (request.auth.token.email.lower() == "s.a.ghozi@gmail.com" || 
+                           request.auth.token.email.lower() == "sulthanalighozi@gmail.com");
+      
+      // Allow any authenticated user to check their own specific whitelist entry
+      allow read: if request.auth != null && 
+                  request.auth.token.email != null && 
+                  request.auth.token.email.lower() == email;
+    }
+  }
+}
