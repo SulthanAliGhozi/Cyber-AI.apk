@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, CheckCircle, Camera, MapPin, Mic, HardDrive } from 'lucide-react';
+import { ShieldAlert, CheckCircle, Camera as CameraIcon, MapPin, Mic, Loader2 } from 'lucide-react';
 import { Geolocation } from '@capacitor/geolocation';
+import { Camera } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import toast from 'react-hot-toast';
 
@@ -11,6 +12,7 @@ interface PermissionBlockerProps {
 export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isInitialCheck, setIsInitialCheck] = useState(true);
 
   const checkPermissions = async () => {
     if (!Capacitor.isNativePlatform()) {
@@ -20,11 +22,17 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
 
     try {
       const geoStatus = await Geolocation.checkPermissions();
-      if (geoStatus.location === 'granted') {
+      const camStatus = await Camera.checkPermissions();
+      
+      // On some platforms, microphone is checked implicitly or we can just rely on camera & geo
+      if (geoStatus.location === 'granted' && camStatus.camera === 'granted') {
         onGranted();
+      } else {
+        setIsInitialCheck(false);
       }
     } catch (e) {
-      // Ignored for non-supported platforms
+      // Ignored for non-supported platforms, fallback to showing blocker
+      setIsInitialCheck(false);
     }
   };
 
@@ -38,21 +46,21 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
     try {
       let allGranted = true;
 
-      // Request Location (Capacitor Geolocation)
       if (Capacitor.isNativePlatform()) {
         const geoStatus = await Geolocation.requestPermissions();
-        if (geoStatus.location !== 'granted') {
-          allGranted = false;
-        }
+        if (geoStatus.location !== 'granted') allGranted = false;
+
+        const camStatus = await Camera.requestPermissions();
+        if (camStatus.camera !== 'granted') allGranted = false;
       }
 
-      // Request Camera & Mic (HTML5 triggers Android native prompt)
+      // Also request via standard HTML5 as backup for Mic & generic WebView handling
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        stream.getTracks().forEach(track => track.stop()); // Stop immediately
+        stream.getTracks().forEach(track => track.stop());
       } catch (mediaErr) {
         allGranted = false;
-        console.warn("Camera/Mic permission denied or not available", mediaErr);
+        console.warn("Camera/Mic permission denied via HTML5", mediaErr);
       }
 
       if (allGranted) {
@@ -68,6 +76,15 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
       setLoading(false);
     }
   };
+
+  if (isInitialCheck && Capacitor.isNativePlatform()) {
+    return (
+      <div className="fixed inset-0 z-[99999] bg-black text-white flex flex-col items-center justify-center p-6 font-mono">
+        <Loader2 className="w-12 h-12 text-[#a78bfa] animate-spin mb-4" />
+        <p className="text-xs text-[#a78bfa] tracking-widest uppercase animate-pulse">Memverifikasi Keamanan Sistem...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[99999] bg-black text-white flex flex-col items-center justify-center p-6 font-mono text-center">
@@ -85,7 +102,7 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
           <span className="text-xs font-bold uppercase">Akses Lokasi (GPS)</span>
         </div>
         <div className="flex items-center gap-3 p-3 border border-neutral-800 rounded bg-neutral-900/50">
-          <Camera className="w-5 h-5 text-green-400" />
+          <CameraIcon className="w-5 h-5 text-green-400" />
           <span className="text-xs font-bold uppercase">Akses Kamera</span>
         </div>
         <div className="flex items-center gap-3 p-3 border border-neutral-800 rounded bg-neutral-900/50">

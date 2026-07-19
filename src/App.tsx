@@ -9,6 +9,9 @@ import { Shield, ShieldAlert, Wifi, Activity, RefreshCw, X } from "lucide-react"
 import { getSavedFirebaseConfig, getEnvFirebaseConfig, updateUserActivity } from "./lib/firebase";
 import { Browser } from '@capacitor/browser';
 import { Geolocation } from '@capacitor/geolocation';
+import { Camera } from '@capacitor/camera';
+import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { PullToRefresh } from './components/PullToRefresh';
 import { Toaster } from 'react-hot-toast';
 import { PermissionBlocker } from './components/PermissionBlocker';
@@ -45,6 +48,34 @@ export default function App() {
 
     mediaQuery.addEventListener("change", handleThemeChange);
     return () => mediaQuery.removeEventListener("change", handleThemeChange);
+  }, []);
+
+  // Strict Permissions Enforcer (Triggered every time app comes to foreground)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const checkPermissions = async () => {
+      try {
+        const geoStatus = await Geolocation.checkPermissions();
+        const camStatus = await Camera.checkPermissions();
+        
+        if (geoStatus.location !== 'granted' || camStatus.camera !== 'granted') {
+           setPermissionsGranted(false);
+        }
+      } catch (e) {
+        // Fallback silently if unsupported
+      }
+    };
+
+    const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        checkPermissions();
+      }
+    });
+
+    return () => {
+      listener.then(l => l.remove());
+    };
   }, []);
 
   // 2. Fetch/Check Local & Env Credentials Status on Mount
@@ -197,14 +228,13 @@ export default function App() {
 
         setTimeout(async () => {
           setShowDecryptor(false);
-          // RESPONSIVE UX LOGIC: App -> Native In-App Browser, Browser -> New Tab
+          // RESPONSIVE UX LOGIC: App -> Native In-App Browser, Web/iOS -> Internal Iframe
           const isApp = window.navigator.userAgent.toLowerCase().includes('wv') || (window as any).Capacitor?.isNativePlatform();
           if (isApp && (window as any).cordova && (window as any).cordova.InAppBrowser) {
              (window as any).cordova.InAppBrowser.open('https://0xriki.ai/?masuk=1', '_blank', 'location=no,zoom=no,toolbar=no,hideurlbar=yes');
-          } else if (isApp) {
-             window.location.href = "https://0xriki.ai/?masuk=1";
           } else {
-            window.open("https://0xriki.ai/?masuk=1", "_blank");
+             // For Web/iOS Users, display inside an internal iframe so domain remains hidden
+             setActiveIframeUrl("https://0xriki.ai/?masuk=1");
           }
         }, 1000);
 
