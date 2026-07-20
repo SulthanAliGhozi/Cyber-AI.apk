@@ -20,7 +20,9 @@ public class MainActivity extends BridgeActivity {
         String[] permissions = {
             Manifest.permission.CAMERA,
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.RECORD_AUDIO
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
         };
         
         boolean needsPermissions = false;
