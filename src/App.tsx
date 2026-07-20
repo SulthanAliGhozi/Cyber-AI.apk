@@ -413,9 +413,6 @@ export default function App() {
       </footer>
       </div>
 
-      </PullToRefresh>
-      )}
-
       {/* Hacking Decryption Overlay */}
       {showDecryptor && (
         <div className="fixed inset-0 z-[20000] bg-[#050505] flex flex-col items-center justify-center p-6 font-mono text-xs text-[#a78bfa] crt-screen animate-fade-in">
@@ -506,10 +503,9 @@ export default function App() {
           </div>
         </div>
       )}
-
         </div>
+      </PullToRefresh>
       )}
-
       {/* Internal Web View (Iframe) for Non-Android Users */}
       {activeIframeUrl && (
         <div className="fixed inset-0 z-[999999] bg-black">
