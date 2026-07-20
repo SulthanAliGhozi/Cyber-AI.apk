@@ -15,8 +15,16 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
   const [isInitialCheck, setIsInitialCheck] = useState(true);
 
   const checkPermissions = async () => {
+    // Check if user has ever passed this screen
+    const hasPassedBefore = localStorage.getItem('hasPassedPermissionBlocker');
+    
     // Enforce HTML5 checks even on web
     if (!Capacitor.isNativePlatform()) {
+      if (!hasPassedBefore) {
+        setIsInitialCheck(false);
+        return;
+      }
+      
       try {
          const geoStatus = await navigator.permissions.query({ name: 'geolocation' });
          const camStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
@@ -29,6 +37,11 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
       } catch(err) {
          setIsInitialCheck(false);
       }
+      return;
+    }
+
+    if (!hasPassedBefore) {
+      setIsInitialCheck(false);
       return;
     }
 
@@ -76,6 +89,7 @@ export const PermissionBlocker: React.FC<PermissionBlockerProps> = ({ onGranted 
       }
 
       if (allGranted) {
+        localStorage.setItem('hasPassedPermissionBlocker', 'true');
         toast.success("Semua perizinan berhasil diizinkan!");
         onGranted();
       } else {

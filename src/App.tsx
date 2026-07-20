@@ -503,7 +503,6 @@ export default function App() {
           </div>
         </div>
       )}
-        </div>
       </PullToRefresh>
       )}
       {/* Internal Web View (Iframe) for Non-Android Users */}
