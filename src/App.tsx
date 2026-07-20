@@ -14,7 +14,6 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { PullToRefresh } from './components/PullToRefresh';
 import { Toaster } from 'react-hot-toast';
-import { PermissionBlocker } from './components/PermissionBlocker';
 
 interface UserProfile {
   email: string;
@@ -33,8 +32,6 @@ export default function App() {
   const [showDecryptor, setShowDecryptor] = useState(false);
   const [decryptProgress, setDecryptProgress] = useState(0);
   const [decryptLogs, setDecryptLogs] = useState<string[]>([]);
-  
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
   const [activeIframeUrl, setActiveIframeUrl] = useState<string | null>(null);
   
   // 1. Automatic Dark Mode Detection
@@ -50,33 +47,8 @@ export default function App() {
     return () => mediaQuery.removeEventListener("change", handleThemeChange);
   }, []);
 
-  // Strict Permissions Enforcer (Triggered every time app comes to foreground)
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
+  // Removed Capacitor permission check - now handled natively in Android MainActivity
 
-    const checkPermissions = async () => {
-      try {
-        const geoStatus = await Geolocation.checkPermissions();
-        const camStatus = await Camera.checkPermissions();
-        
-        if (geoStatus.location !== 'granted' || camStatus.camera !== 'granted') {
-           setPermissionsGranted(false);
-        }
-      } catch (e) {
-        // Fallback silently if unsupported
-      }
-    };
-
-    const listener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) {
-        checkPermissions();
-      }
-    });
-
-    return () => {
-      listener.then(l => l.remove());
-    };
-  }, []);
 
   // 2. Fetch/Check Local & Env Credentials Status on Mount
   useEffect(() => {
@@ -268,10 +240,7 @@ export default function App() {
         },
       }} />
       <SplashScreen />
-      {!permissionsGranted && !activeIframeUrl && (
-        <PermissionBlocker onGranted={() => setPermissionsGranted(true)} />
-      )}
-      {permissionsGranted && !activeIframeUrl && (
+      {!activeIframeUrl && (
         <PullToRefresh isDark={isDark} onRefresh={() => { 
           // Clear caches when pulling to refresh to ensure latest updates are fetched
           if ('caches' in window) {
